@@ -1,5 +1,4 @@
-build/
 *.exe
 *.o
 *.obj
-*.dll
+chip8
