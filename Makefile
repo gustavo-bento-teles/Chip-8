@@ -1,50 +1,78 @@
 CC = gcc
 
-SRC = $(wildcard src/*.c)
-
 OUT = chip8
 
-CFLAGS = -Wall -Wextra
+SRC = $(wildcard src/*.c)
+
+OBJ = $(patsubst src/%.c,build/obj/%.o,$(SRC))
+
+CFLAGS = \
+	-Wall \
+	-Wextra \
+	-g
+
+UNAME_S := $(shell uname -s)
 
 ifeq ($(OS),Windows_NT)
 
-    OUT := $(OUT).exe
+	SDL_DIR = external/SDL2/windows
 
-    INCLUDE = -I SDL2/include
+	OUT := $(OUT).exe
 
-    LIBS = -L SDL2/lib \
-           -lmingw32 \
-           -lSDL2main \
-           -lSDL2
+	INCLUDE = \
+		-Isrc/include \
+		-I$(SDL_DIR)/include
 
-    COPYDLL = cmd /c copy SDL2\bin\SDL2.dll build
+	LIBS = \
+		-L$(SDL_DIR)/lib \
+		-lmingw32 \
+		-lSDL2main \
+		-lSDL2
 
-    RUN = .\build\$(OUT)
+	COPYDLL = copy $(SDL_DIR)\bin\SDL2.dll build
 
-    CLEAN = cmd /c del /Q build\$(OUT)
+	RUN = .\\build\\$(OUT)
+
+	REMOVE = del /Q
 
 else
 
-    INCLUDE = $(shell sdl2-config --cflags)
+	SDL_DIR = external/SDL2/linux
 
-    LIBS = $(shell sdl2-config --libs)
+	INCLUDE = \
+		-Isrc/include \
+		-I$(SDL_DIR)/include/SDL2
 
-    COPYDLL =
+	LIBS = \
+		-L$(SDL_DIR)/lib \
+		-Wl,-rpath,'$$ORIGIN/../external/SDL2/linux/lib' \
+		-lSDL2
 
-    RUN = ./build/$(OUT)
+	COPYDLL =
 
-    CLEAN = rm -f build/$(OUT)
+	RUN = ./build/$(OUT)
+
+	REMOVE = rm -f
 
 endif
 
-all:
-	$(CC) $(SRC) $(CFLAGS) $(INCLUDE) $(LIBS) -o build/$(OUT)
+TARGET = build/$(OUT)
+
+all: $(TARGET)
+
+$(TARGET): $(OBJ)
+	$(CC) $(OBJ) $(LIBS) -o $@
 	$(COPYDLL)
 
-run:
-	$(CC) $(SRC) $(CFLAGS) $(INCLUDE) $(LIBS) -o build/$(OUT)
-	$(COPYDLL)
+build/obj/%.o: src/%.c
+	mkdir -p build/obj
+	$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $@
+
+run: all
 	$(RUN)
 
 clean:
-	$(CLEAN)
+	$(REMOVE) build/obj/*.o
+	$(REMOVE) $(TARGET)
+
+re: clean all
