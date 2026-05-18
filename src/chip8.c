@@ -6,7 +6,10 @@
 #include <stdlib.h>
 #include <time.h>
 
-void chip8_init(Chip8 *chip8) { chip8->pc = 0x200; }
+void chip8_init(Chip8 *chip8) {
+  chip8->pc = 0x200;
+  srand(time(NULL));
+}
 
 void chip8_fetch(Chip8 *chip8) {
   uint8_t first_byte = chip8->memory[chip8->pc];
@@ -212,7 +215,6 @@ void chip8_execute(Chip8 *chip8) {
   }
 
   case 0xC000: {
-    srand(time(NULL));
     uint8_t random_byte = rand() % 255;
 
     uint8_t x = (chip8->opcode & 0x0F00) >> 8;
