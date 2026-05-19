@@ -224,6 +224,35 @@ void chip8_execute(Chip8 *chip8) {
     break;
   }
 
+  case 0xD000: {
+    uint8_t x = chip8->v[(chip8->opcode & 0x0F00) >> 8];
+    uint8_t y = chip8->v[(chip8->opcode & 0x00F0) >> 4];
+    uint8_t n = chip8->opcode & 0x000F;
+
+    chip8->v[0xF] = 0;
+
+    for (uint8_t row = 0; row < n; row++) {
+      uint8_t sprite_byte = chip8->memory[chip8->I + row];
+
+      for (uint8_t col = 0; col < 8; col++) {
+        uint8_t mask = 0x80 >> col;
+
+        if (sprite_byte & mask) {
+          uint8_t px = (x + col) % 64;
+          uint8_t py = (y + row) % 32;
+          int index = PIXEL(px, py);
+
+          if (chip8->framebuffer[index]) {
+            chip8->v[0xF] = true;
+          }
+
+          chip8->framebuffer[index] ^= true;
+        }
+      }
+    }
+    break;
+  }
+
   default:
     break;
   }

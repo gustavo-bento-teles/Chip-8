@@ -6,6 +6,8 @@
 #define WIDTH_CHIP8 64
 #define HEIGHT_CHIP8 32
 
+#define PIXEL(x, y) ((y) * WIDTH_CHIP8 + (x))
+
 #define STACK_SIZE 16
 
 typedef struct {
