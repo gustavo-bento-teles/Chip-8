@@ -18,7 +18,7 @@ void chip8_fetch(Chip8 *chip8) {
   chip8->opcode = (first_byte << 8) | second_byte;
 }
 
-void chip8_execute(Chip8 *chip8) {
+bool chip8_execute(Chip8 *chip8) {
 
   switch (chip8->opcode & 0xF000) {
 
@@ -31,12 +31,15 @@ void chip8_execute(Chip8 *chip8) {
 
     case 0x00EE:
       if (chip8->sp == 0) {
-        // underflow protection
+        SDL_ShowSimpleMessageBox(
+            SDL_MESSAGEBOX_ERROR, "Erro",
+            "Impossível retornar quando stack pointer é igual a 0!", NULL);
+        return false;
         break;
       }
 
       chip8->pc = chip8->stack[--chip8->sp];
-      return;
+      return true;
     }
     break;
   }
@@ -44,20 +47,24 @@ void chip8_execute(Chip8 *chip8) {
   case 0x1000: {
     uint16_t nnn = chip8->opcode & 0x0FFF;
     chip8->pc = nnn;
-    return;
+    return true;
   }
 
   case 0x2000: {
     uint16_t nnn = chip8->opcode & 0x0FFF;
 
     if (chip8->sp >= STACK_SIZE) {
-      // overflow protection
+      SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Erro",
+                               "Impossível chamar função quando stack pointer "
+                               "é igual ou maior do que tamanho da stack!",
+                               NULL);
+      return false;
       break;
     }
 
     chip8->stack[chip8->sp++] = chip8->pc + 2;
     chip8->pc = nnn;
-    return;
+    return true;
   }
 
   case 0x3000: {
@@ -211,7 +218,7 @@ void chip8_execute(Chip8 *chip8) {
   case 0xB000: {
     uint16_t nnn = chip8->opcode & 0x0FFF;
     chip8->pc = nnn + chip8->v[0];
-    return;
+    return true;
   }
 
   case 0xC000: {
@@ -254,8 +261,13 @@ void chip8_execute(Chip8 *chip8) {
   }
 
   default:
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Erro",
+                             "Opcode desconhecido!", NULL);
+    return false;
     break;
   }
 
   chip8->pc += 2;
+
+  return true;
 }

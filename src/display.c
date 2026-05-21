@@ -1,7 +1,5 @@
 #include "include/display.h"
 #include "SDL2/SDL.h"
-#include "SDL2/SDL_rect.h"
-#include "SDL2/SDL_render.h"
 #include "include/chip8.h"
 #include <stdbool.h>
 
@@ -45,7 +43,7 @@ bool init_display(Display *display) {
 
 void draw_framebuffer(Display *display, bool *framebuffer) {
   for (int i = 0; i < sizeof(framebuffer); i++) {
-    if (framebuffer[i] == true) {
+    if (framebuffer[i]) {
       int px = (i % WIDTH_CHIP8) * SCALE;
       int py = (i / WIDTH_CHIP8) * SCALE;
 
@@ -56,6 +54,11 @@ void draw_framebuffer(Display *display, bool *framebuffer) {
     }
   }
   SDL_RenderPresent(display->renderer);
+}
+
+void clear_display(Display *display) {
+  SDL_SetRenderDrawColor(display->renderer, 0, 0, 0, 255);
+  SDL_RenderClear(display->renderer);
 }
 
 void destroy_display(Display *display) {

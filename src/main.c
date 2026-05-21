@@ -1,7 +1,6 @@
 #include "include/chip8.h"
 #include "include/display.h"
-
-#include <stdlib.h>
+#include <stdbool.h>
 
 int main() {
   Chip8 *chip8 = calloc(1, sizeof(Chip8));
@@ -24,6 +23,29 @@ int main() {
   if (!init_display(display)) {
     return 1;
   }
+
+  SDL_Event event;
+
+  bool running = true;
+
+  while (running) {
+    while (SDL_PollEvent(&event)) {
+      if (event.type == SDL_QUIT) {
+        running = false;
+      }
+    }
+
+    chip8_fetch(chip8);
+
+    if (!chip8_execute(chip8)) {
+      break;
+    }
+
+    clear_display(display);
+    draw_framebuffer(display, chip8->framebuffer);
+  }
+
+  destroy_display(display);
 
   free(chip8);
   free(display);

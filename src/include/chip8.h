@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SDL2/SDL.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -33,4 +34,4 @@ void chip8_init(Chip8 *chip8);
 
 void chip8_fetch(Chip8 *chip8);
 
-void chip8_execute(Chip8 *chip8);
+bool chip8_execute(Chip8 *chip8);
