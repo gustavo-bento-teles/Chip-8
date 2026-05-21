@@ -1,8 +1,0 @@
--xc
---target=x86_64-w64-windows-gnu
-
--Isrc/include
--Iexternal/SDL2/windows/include
-
--IC:/Users/GustavoBentoDeOlivei/scoop/apps/gcc/current/include
--IC:/Users/GustavoBentoDeOlivei/scoop/apps/gcc/current/x86_64-w64-mingw32/include
