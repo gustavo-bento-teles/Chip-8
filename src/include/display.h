@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
+#define SDL_MAIN_HANDLED
 #include "chip8.h"
 #include <SDL2/SDL.h>
 
@@ -12,6 +14,8 @@ typedef struct {
   SDL_Renderer *renderer;
 } Display;
 
-void init_display(Display *display);
+bool init_display(Display *display);
 
-void draw_framebuffer(bool *framebuffer);
+void draw_framebuffer(Display *display, bool *framebuffer);
+
+void destroy_display(Display *display);
