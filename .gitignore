@@ -1,4 +1,33 @@
+# Build
+/build/
+/out/
+
+# CMake gerado
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+compile_commands.json
+
+# Executáveis gerados
 *.exe
+*.out
+
+# Objetos
 *.o
 *.obj
-chip8
+
+# Logs
+*.log
+
+# Editor / LSP
+.cache/
+.vscode/
+.clangd
+
+# Neovim
+*.swp
+*.swo
+
+# Sistema
+.DS_Store
+Thumbs.db

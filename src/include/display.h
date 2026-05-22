@@ -1,11 +1,10 @@
 #pragma once
 
-#include <stdbool.h>
-#define SDL_MAIN_HANDLED
 #include "chip8.h"
 #include <SDL2/SDL.h>
+#include <stdbool.h>
 
-#define SCALE 10
+#define SCALE 20
 #define WINDOW_WIDTH (WIDTH_CHIP8 * SCALE)
 #define WINDOW_HEIGHT (HEIGHT_CHIP8 * SCALE)
 

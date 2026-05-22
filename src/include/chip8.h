@@ -11,8 +11,11 @@
 
 #define STACK_SIZE 16
 
+#define MEMORY_SIZE 4096
+#define MEMORY_INIT_POINT 0x200
+
 typedef struct {
-  uint8_t memory[4096];
+  uint8_t memory[MEMORY_SIZE];
 
   uint8_t v[16];
 

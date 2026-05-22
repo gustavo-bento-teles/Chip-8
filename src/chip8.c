@@ -7,7 +7,7 @@
 #include <time.h>
 
 void chip8_init(Chip8 *chip8) {
-  chip8->pc = 0x200;
+  chip8->pc = MEMORY_INIT_POINT;
   srand(time(NULL));
 }
 

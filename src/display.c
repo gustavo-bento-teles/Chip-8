@@ -42,7 +42,7 @@ bool init_display(Display *display) {
 }
 
 void draw_framebuffer(Display *display, bool *framebuffer) {
-  for (int i = 0; i < sizeof(framebuffer); i++) {
+  for (int i = 0; i < WIDTH_CHIP8 * HEIGHT_CHIP8; i++) {
     if (framebuffer[i]) {
       int px = (i % WIDTH_CHIP8) * SCALE;
       int py = (i / WIDTH_CHIP8) * SCALE;

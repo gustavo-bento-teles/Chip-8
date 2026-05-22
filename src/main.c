@@ -1,8 +1,17 @@
+#define SDL_MAIN_HANDLED
 #include "include/chip8.h"
 #include "include/display.h"
+#include "include/rom.h"
 #include <stdbool.h>
 
-int main() {
+int main(int argc, char *argv[]) {
+  if (argc < 2) {
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Erro",
+                             "Nenhuma ROM fornecida!", NULL);
+
+    return 1;
+  }
+
   Chip8 *chip8 = calloc(1, sizeof(Chip8));
   Display *display = calloc(1, sizeof(Display));
 
@@ -20,6 +29,10 @@ int main() {
 
   chip8_init(chip8);
 
+  if (!load_rom(argv[1], chip8->memory, MEMORY_INIT_POINT)) {
+    return 1;
+  }
+
   if (!init_display(display)) {
     return 1;
   }
@@ -29,7 +42,9 @@ int main() {
   bool running = true;
 
   while (running) {
+
     while (SDL_PollEvent(&event)) {
+
       if (event.type == SDL_QUIT) {
         running = false;
       }
@@ -43,6 +58,8 @@ int main() {
 
     clear_display(display);
     draw_framebuffer(display, chip8->framebuffer);
+
+    SDL_Delay(16);
   }
 
   destroy_display(display);
