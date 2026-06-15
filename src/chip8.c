@@ -88,13 +88,19 @@ bool chip8_execute(Chip8 *chip8) {
   }
 
   case 0x5000: {
-    uint8_t x = (chip8->opcode & 0x0F00) >> 8;
-    uint8_t y = (chip8->opcode & 0x00F0) >> 4;
+    if ((chip8->opcode & 0x000F) == 0x0) {
+      uint8_t x = (chip8->opcode & 0x0F00) >> 8;
+      uint8_t y = (chip8->opcode & 0x00F0) >> 4;
 
-    if (chip8->v[x] == chip8->v[y]) {
-      chip8->pc += 2;
+      if (chip8->v[x] == chip8->v[y]) {
+        chip8->pc += 2;
+      }
+      break;
     }
-    break;
+
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Erro",
+                             "Opcode desconhecido!", NULL);
+    return false;
   }
 
   case 0x6000: {
@@ -163,7 +169,7 @@ bool chip8_execute(Chip8 *chip8) {
       uint8_t x = (chip8->opcode & 0x0F00) >> 8;
       uint8_t y = (chip8->opcode & 0x00F0) >> 4;
 
-      chip8->v[0xF] = (chip8->v[x] >= chip8->v[y]);
+      chip8->v[0xF] = (chip8->v[x] > chip8->v[y]);
       chip8->v[x] = chip8->v[x] - chip8->v[y];
 
       break;
@@ -182,7 +188,7 @@ bool chip8_execute(Chip8 *chip8) {
       uint8_t x = (chip8->opcode & 0x0F00) >> 8;
       uint8_t y = (chip8->opcode & 0x00F0) >> 4;
 
-      chip8->v[0xF] = (chip8->v[y] >= chip8->v[x]);
+      chip8->v[0xF] = (chip8->v[y] > chip8->v[x]);
       chip8->v[x] = chip8->v[y] - chip8->v[x];
 
       break;
@@ -200,13 +206,18 @@ bool chip8_execute(Chip8 *chip8) {
   }
 
   case 0x9000: {
-    uint8_t x = (chip8->opcode & 0x0F00) >> 8;
-    uint8_t y = (chip8->opcode & 0x00F0) >> 4;
+    if ((chip8->opcode & 0x000F) & 0x0) {
+      uint8_t x = (chip8->opcode & 0x0F00) >> 8;
+      uint8_t y = (chip8->opcode & 0x00F0) >> 4;
 
-    if (chip8->v[x] != chip8->v[y]) {
-      chip8->pc += 2;
+      if (chip8->v[x] != chip8->v[y]) {
+        chip8->pc += 2;
+      }
+      break;
     }
-    break;
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Erro",
+                             "Opcode desconhecido!", NULL);
+    return false;
   }
 
   case 0xA000: {
@@ -222,7 +233,7 @@ bool chip8_execute(Chip8 *chip8) {
   }
 
   case 0xC000: {
-    uint8_t random_byte = rand() % 255;
+    uint8_t random_byte = rand() % 256;
 
     uint8_t x = (chip8->opcode & 0x0F00) >> 8;
     uint8_t nn = chip8->opcode & 0x00FF;
@@ -258,6 +269,48 @@ bool chip8_execute(Chip8 *chip8) {
       }
     }
     break;
+  }
+
+  case 0xE000: {
+    switch ((chip8->opcode & 0x00FF)) {
+
+    case 0x9E: {
+      uint8_t x = (chip8->opcode & 0x0F00) >> 8;
+
+      if (chip8->keypad[x]) {
+        chip8->pc += 2;
+      }
+      break;
+    }
+
+    case 0xA1: {
+      uint8_t x = (chip8->opcode & 0x0F00) >> 8;
+
+      if (!chip8->keypad[x]) {
+        chip8->pc += 2;
+      }
+      break;
+    }
+    }
+  }
+
+  case 0xF000: {
+    switch (chip8->opcode & 0x00FF) {
+    case 0x0A: {
+      uint8_t x = (chip8->opcode & 0x0F00) >> 8;
+
+      for (uint8_t i = 0; i < 16; i++) {
+        if (chip8->keypad[i]) {
+          chip8->v[x] = i;
+          chip8->pc += 2;
+          return true;
+        }
+      }
+
+      chip8->pc -= 2;
+      break;
+    } break;
+    }
   }
 
   default:

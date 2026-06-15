@@ -1,6 +1,8 @@
+#include "input.h"
 #define SDL_MAIN_HANDLED
 #include "include/chip8.h"
 #include "include/display.h"
+#include "include/input.h"
 #include "include/rom.h"
 #include <stdbool.h>
 
@@ -49,6 +51,10 @@ int main(int argc, char *argv[]) {
         running = false;
       }
     }
+
+    const Uint8 *keyboard = SDL_GetKeyboardState(NULL);
+
+    update_keyboard(chip8->keypad, keyboard);
 
     chip8_fetch(chip8);
 

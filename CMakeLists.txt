@@ -12,7 +12,7 @@ file(GLOB SRC_FILES
     src/*.c
 )
 
-add_executable(chip8 WIN32 ${SRC_FILES})
+add_executable(chip8 ${SRC_FILES})
 
 target_include_directories(chip8 PRIVATE
     src/include
@@ -32,6 +32,7 @@ if(WIN32)
 
     target_link_libraries(chip8
     mingw32
+    SDL2main
     SDL2
     )
 

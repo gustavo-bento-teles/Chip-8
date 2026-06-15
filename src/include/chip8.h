@@ -18,6 +18,7 @@ typedef struct {
   uint8_t memory[MEMORY_SIZE];
 
   uint8_t v[16];
+  bool keypad[16];
 
   uint16_t I;
   uint16_t pc;
