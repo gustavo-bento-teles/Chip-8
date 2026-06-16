@@ -1,8 +1,11 @@
 #pragma once
 #include <SDL2/SDL.h>
 
-const double TIMER_INTERVAL = 1.0 / 60.0;
+extern const double TIMER_INTERVAL;
+extern const double CPU_INTERVAL;
 
-double timer_acumulator = 0.0;
+extern double timer_accumulator;
+extern double cpu_accumulator;
 
-Uint32 last_ticks;
+extern Uint32 last_ticks;
+extern Uint32 cpu_last_ticks;

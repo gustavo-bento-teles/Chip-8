@@ -1,6 +1,4 @@
 #include "include/chip8.h"
-#include "SDL2/SDL_stdinc.h"
-#include "SDL2/SDL_timer.h"
 #include "include/timer.h"
 #include <stdint.h>
 #include <stdlib.h>
@@ -10,6 +8,7 @@ void chip8_init(Chip8 *chip8) {
   chip8->pc = MEMORY_INIT_POINT;
   srand(time(NULL));
   last_ticks = SDL_GetTicks();
+  cpu_last_ticks = SDL_GetTicks();
 }
 
 void chip8_fetch(Chip8 *chip8) {
@@ -358,9 +357,9 @@ void chip8_cycle(Chip8 *chip8) {
 
   last_ticks = current_ticks;
 
-  timer_acumulator += delta_time;
+  timer_accumulator += delta_time;
 
-  while (timer_acumulator >= TIMER_INTERVAL) {
+  while (timer_accumulator >= TIMER_INTERVAL) {
     if (chip8->delay_timer > 0) {
       chip8->delay_timer--;
     }
@@ -369,6 +368,6 @@ void chip8_cycle(Chip8 *chip8) {
       chip8->sound_timer--;
     }
 
-    timer_acumulator -= TIMER_INTERVAL;
+    timer_accumulator -= TIMER_INTERVAL;
   }
 }

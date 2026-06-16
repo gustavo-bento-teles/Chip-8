@@ -1,10 +1,9 @@
-#include "input.h"
-#include <stdint.h>
 #define SDL_MAIN_HANDLED
 #include "include/chip8.h"
 #include "include/display.h"
 #include "include/input.h"
 #include "include/rom.h"
+#include "include/timer.h"
 #include <stdbool.h>
 
 int main(int argc, char *argv[]) {
@@ -57,10 +56,20 @@ int main(int argc, char *argv[]) {
 
     update_keyboard(chip8->keypad, keyboard);
 
-    chip8_fetch(chip8);
+    Uint32 cpu_current_ticks = SDL_GetTicks();
+    double delta_time = (cpu_current_ticks - cpu_last_ticks) / 1000.0;
+    cpu_last_ticks = cpu_current_ticks;
+    cpu_accumulator += delta_time;
 
-    if (!chip8_execute(chip8)) {
-      break;
+    while (cpu_accumulator >= CPU_INTERVAL) {
+      chip8_fetch(chip8);
+
+      if (!chip8_execute(chip8)) {
+        running = false;
+        break;
+      }
+
+      cpu_accumulator -= CPU_INTERVAL;
     }
 
     chip8_cycle(chip8);
@@ -68,7 +77,7 @@ int main(int argc, char *argv[]) {
     clear_display(display);
     draw_framebuffer(display, chip8->framebuffer);
 
-    SDL_Delay(16);
+    SDL_Delay(1);
   }
 
   destroy_display(display);
