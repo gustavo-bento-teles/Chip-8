@@ -1,5 +1,4 @@
 #pragma once
-#include "SDL2/SDL_stdinc.h"
 #include <SDL2/SDL.h>
 
 const double TIMER_INTERVAL = 1.0 / 60.0;
