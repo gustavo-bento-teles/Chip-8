@@ -1,4 +1,5 @@
 #include "input.h"
+#include <stdint.h>
 #define SDL_MAIN_HANDLED
 #include "include/chip8.h"
 #include "include/display.h"
@@ -61,6 +62,8 @@ int main(int argc, char *argv[]) {
     if (!chip8_execute(chip8)) {
       break;
     }
+
+    chip8_cycle(chip8);
 
     clear_display(display);
     draw_framebuffer(display, chip8->framebuffer);

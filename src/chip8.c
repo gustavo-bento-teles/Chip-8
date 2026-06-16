@@ -1,7 +1,7 @@
 #include "include/chip8.h"
-
-#include <memory.h>
-#include <stdbool.h>
+#include "SDL2/SDL_stdinc.h"
+#include "SDL2/SDL_timer.h"
+#include "include/timer.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
@@ -9,6 +9,7 @@
 void chip8_init(Chip8 *chip8) {
   chip8->pc = MEMORY_INIT_POINT;
   srand(time(NULL));
+  last_ticks = SDL_GetTicks();
 }
 
 void chip8_fetch(Chip8 *chip8) {
@@ -272,7 +273,7 @@ bool chip8_execute(Chip8 *chip8) {
   }
 
   case 0xE000: {
-    switch ((chip8->opcode & 0x00FF)) {
+    switch (chip8->opcode & 0x00FF) {
 
     case 0x9E: {
       uint8_t x = (chip8->opcode & 0x0F00) >> 8;
@@ -292,10 +293,29 @@ bool chip8_execute(Chip8 *chip8) {
       break;
     }
     }
+    break;
   }
 
   case 0xF000: {
     switch (chip8->opcode & 0x00FF) {
+    case 0x07: {
+      uint8_t x = (chip8->opcode & 0x0F00) >> 8;
+      chip8->v[x] = chip8->delay_timer;
+      break;
+    }
+
+    case 0x15: {
+      uint8_t x = (chip8->opcode & 0x0F00) >> 8;
+      chip8->delay_timer = chip8->v[x];
+      break;
+    }
+
+    case 0x18: {
+      uint8_t x = (chip8->opcode & 0x0F00) >> 8;
+      chip8->sound_timer = chip8->v[x];
+      break;
+    }
+
     case 0x0A: {
       uint8_t x = (chip8->opcode & 0x0F00) >> 8;
 
@@ -309,18 +329,46 @@ bool chip8_execute(Chip8 *chip8) {
 
       chip8->pc -= 2;
       break;
-    } break;
     }
+    case 0x1E: {
+      uint8_t x = (chip8->opcode & 0x0F00) >> 8;
+
+      chip8->I += chip8->v[x];
+      break;
+    }
+    }
+    break;
   }
 
   default:
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Erro",
                              "Opcode desconhecido!", NULL);
     return false;
-    break;
   }
 
   chip8->pc += 2;
 
   return true;
+}
+
+void chip8_cycle(Chip8 *chip8) {
+  Uint32 current_ticks = SDL_GetTicks();
+
+  double delta_time = (current_ticks - last_ticks) / 1000.0;
+
+  last_ticks = current_ticks;
+
+  timer_acumulator += delta_time;
+
+  while (timer_acumulator >= TIMER_INTERVAL) {
+    if (chip8->delay_timer > 0) {
+      chip8->delay_timer--;
+    }
+
+    if (chip8->sound_timer > 0) {
+      chip8->sound_timer--;
+    }
+
+    timer_acumulator -= TIMER_INTERVAL;
+  }
 }
