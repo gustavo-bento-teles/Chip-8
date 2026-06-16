@@ -206,7 +206,7 @@ bool chip8_execute(Chip8 *chip8) {
   }
 
   case 0x9000: {
-    if ((chip8->opcode & 0x000F) & 0x0) {
+    if ((chip8->opcode & 0x000F) == 0x0) {
       uint8_t x = (chip8->opcode & 0x0F00) >> 8;
       uint8_t y = (chip8->opcode & 0x00F0) >> 4;
 
