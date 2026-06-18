@@ -7,5 +7,5 @@ extern const double CPU_INTERVAL;
 extern double timer_accumulator;
 extern double cpu_accumulator;
 
-extern Uint32 last_ticks;
-extern Uint32 cpu_last_ticks;
+extern Uint64 last_ticks;
+extern Uint64 cpu_last_ticks;

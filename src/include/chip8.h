@@ -13,6 +13,7 @@
 
 #define MEMORY_SIZE 4096
 #define MEMORY_INIT_POINT 0x200
+#define FONT_INIT_POINT 0x50
 
 typedef struct {
   uint8_t memory[MEMORY_SIZE];
@@ -20,7 +21,7 @@ typedef struct {
   uint8_t v[16];
   bool keypad[16];
 
-  uint16_t I;
+  uint16_t regI;
   uint16_t pc;
 
   uint16_t stack[STACK_SIZE];
@@ -30,6 +31,7 @@ typedef struct {
   uint8_t sound_timer;
 
   bool framebuffer[WIDTH_CHIP8 * HEIGHT_CHIP8];
+  bool draw_flag;
 
   uint16_t opcode;
 } Chip8;

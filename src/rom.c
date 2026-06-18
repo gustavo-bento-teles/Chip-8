@@ -1,5 +1,5 @@
 #include "include/rom.h"
-#include "chip8.h"
+#include "include/chip8.h"
 #include <stdio.h>
 
 bool load_rom(const char *file_path, uint8_t *memory,

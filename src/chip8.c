@@ -1,11 +1,64 @@
 #include "include/chip8.h"
 #include "include/timer.h"
+#include <SDL2/SDL_stdinc.h>
+#include <SDL2/SDL_timer.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
 
+const uint8_t fontset[80] = {
+    // 0
+    0xF0, 0x90, 0x90, 0x90, 0xF0,
+
+    // 1
+    0x20, 0x60, 0x20, 0x20, 0x70,
+
+    // 2
+    0xF0, 0x10, 0xF0, 0x80, 0xF0,
+
+    // 3
+    0xF0, 0x10, 0xF0, 0x10, 0xF0,
+
+    // 4
+    0x90, 0x90, 0xF0, 0x10, 0x10,
+
+    // 5
+    0xF0, 0x80, 0xF0, 0x10, 0xF0,
+
+    // 6
+    0xF0, 0x80, 0xF0, 0x90, 0xF0,
+
+    // 7
+    0xF0, 0x10, 0x20, 0x40, 0x40,
+
+    // 8
+    0xF0, 0x90, 0xF0, 0x90, 0xF0,
+
+    // 9
+    0xF0, 0x90, 0xF0, 0x10, 0xF0,
+
+    // A
+    0xF0, 0x90, 0xF0, 0x90, 0x90,
+
+    // B
+    0xE0, 0x90, 0xE0, 0x90, 0xE0,
+
+    // C
+    0xF0, 0x80, 0x80, 0x80, 0xF0,
+
+    // D
+    0xE0, 0x90, 0x90, 0x90, 0xE0,
+
+    // E
+    0xF0, 0x80, 0xF0, 0x80, 0xF0,
+
+    // F
+    0xF0, 0x80, 0xF0, 0x80, 0x80};
+
 void chip8_init(Chip8 *chip8) {
   chip8->pc = MEMORY_INIT_POINT;
+  memcpy(&chip8->memory[FONT_INIT_POINT], fontset, sizeof(fontset));
   srand(time(NULL));
   last_ticks = SDL_GetTicks();
   cpu_last_ticks = SDL_GetTicks();
@@ -27,6 +80,7 @@ bool chip8_execute(Chip8 *chip8) {
 
     case 0x00E0:
       memset(chip8->framebuffer, false, sizeof(chip8->framebuffer));
+      chip8->draw_flag = true;
       break;
 
     case 0x00EE:
@@ -222,7 +276,7 @@ bool chip8_execute(Chip8 *chip8) {
 
   case 0xA000: {
     uint16_t nnn = chip8->opcode & 0x0FFF;
-    chip8->I = nnn;
+    chip8->regI = nnn;
     break;
   }
 
@@ -250,7 +304,7 @@ bool chip8_execute(Chip8 *chip8) {
     chip8->v[0xF] = 0;
 
     for (uint8_t row = 0; row < n; row++) {
-      uint8_t sprite_byte = chip8->memory[chip8->I + row];
+      uint8_t sprite_byte = chip8->memory[chip8->regI + row];
 
       for (uint8_t col = 0; col < 8; col++) {
         uint8_t mask = 0x80 >> col;
@@ -268,6 +322,7 @@ bool chip8_execute(Chip8 *chip8) {
         }
       }
     }
+    chip8->draw_flag = true;
     break;
   }
 
@@ -276,8 +331,9 @@ bool chip8_execute(Chip8 *chip8) {
 
     case 0x9E: {
       uint8_t x = (chip8->opcode & 0x0F00) >> 8;
+      uint8_t key = chip8->v[x];
 
-      if (chip8->keypad[x]) {
+      if (chip8->keypad[key]) {
         chip8->pc += 2;
       }
       break;
@@ -285,8 +341,9 @@ bool chip8_execute(Chip8 *chip8) {
 
     case 0xA1: {
       uint8_t x = (chip8->opcode & 0x0F00) >> 8;
+      uint8_t key = chip8->v[x];
 
-      if (!chip8->keypad[x]) {
+      if (!chip8->keypad[key]) {
         chip8->pc += 2;
       }
       break;
@@ -315,6 +372,39 @@ bool chip8_execute(Chip8 *chip8) {
       break;
     }
 
+    case 0x29: {
+      uint8_t x = (chip8->opcode & 0x0F00) >> 8;
+      chip8->regI = FONT_INIT_POINT + (chip8->v[x] + 5);
+      break;
+    }
+
+    case 0x33: {
+      uint8_t x = (chip8->opcode & 0x0F00) >> 8;
+
+      chip8->memory[chip8->regI] = chip8->v[x] / 100;
+      chip8->memory[chip8->regI + 1] = (chip8->v[x] / 10) % 10;
+      chip8->memory[chip8->regI + 2] = chip8->v[x] % 10;
+      break;
+    }
+
+    case 0x55: {
+      uint8_t x = (chip8->opcode & 0x0F00) >> 8;
+
+      for (uint8_t i = 0; i < x + 1; i++) {
+        chip8->memory[chip8->regI + i] = chip8->v[i];
+      }
+      break;
+    }
+
+    case 0x65: {
+      uint8_t x = (chip8->opcode & 0x0F00) >> 8;
+
+      for (uint8_t i = 0; i < x + 1; i++) {
+        chip8->v[i] = chip8->memory[chip8->regI + i];
+      }
+      break;
+    }
+
     case 0x0A: {
       uint8_t x = (chip8->opcode & 0x0F00) >> 8;
 
@@ -329,10 +419,11 @@ bool chip8_execute(Chip8 *chip8) {
       chip8->pc -= 2;
       break;
     }
+
     case 0x1E: {
       uint8_t x = (chip8->opcode & 0x0F00) >> 8;
 
-      chip8->I += chip8->v[x];
+      chip8->regI += chip8->v[x];
       break;
     }
     }
@@ -351,9 +442,10 @@ bool chip8_execute(Chip8 *chip8) {
 }
 
 void chip8_cycle(Chip8 *chip8) {
-  Uint32 current_ticks = SDL_GetTicks();
+  Uint64 current_ticks = SDL_GetPerformanceCounter();
 
-  double delta_time = (current_ticks - last_ticks) / 1000.0;
+  double delta_time =
+      (double)(current_ticks - last_ticks) / SDL_GetPerformanceFrequency();
 
   last_ticks = current_ticks;
 
