@@ -17,6 +17,4 @@ bool init_display(Display *display);
 
 void draw_framebuffer(Display *display, bool *framebuffer);
 
-void clear_display(Display *display);
-
 void destroy_display(Display *display);

@@ -1,13 +1,9 @@
-#include <SDL2/SDL_timer.h>
-#include <stdint.h>
-#include <sys/types.h>
 #define SDL_MAIN_HANDLED
 #include "include/chip8.h"
 #include "include/display.h"
 #include "include/input.h"
 #include "include/rom.h"
 #include "include/timer.h"
-#include <stdbool.h>
 
 int main(int argc, char *argv[]) {
   if (argc < 2) {
@@ -46,6 +42,8 @@ int main(int argc, char *argv[]) {
 
   bool running = true;
 
+  last_ticks = SDL_GetPerformanceCounter();
+  cpu_last_ticks = SDL_GetPerformanceCounter();
   while (running) {
 
     while (SDL_PollEvent(&event)) {
@@ -82,11 +80,9 @@ int main(int argc, char *argv[]) {
 
     chip8_cycle(chip8);
 
-    if (chip8->draw_flag) {
-      clear_display(display);
+    if (chip8->flag_draw) {
       draw_framebuffer(display, chip8->framebuffer);
-
-      chip8->draw_flag = false;
+      chip8->flag_draw = false;
     }
 
     SDL_Delay(1);

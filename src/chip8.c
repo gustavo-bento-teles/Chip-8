@@ -1,9 +1,6 @@
 #include "include/chip8.h"
 #include "include/timer.h"
-#include <SDL2/SDL_stdinc.h>
-#include <SDL2/SDL_timer.h>
 #include <stdbool.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
 
@@ -60,8 +57,8 @@ void chip8_init(Chip8 *chip8) {
   chip8->pc = MEMORY_INIT_POINT;
   memcpy(&chip8->memory[FONT_INIT_POINT], fontset, sizeof(fontset));
   srand(time(NULL));
-  last_ticks = SDL_GetTicks();
-  cpu_last_ticks = SDL_GetTicks();
+  last_ticks = SDL_GetPerformanceCounter();
+  cpu_last_ticks = SDL_GetPerformanceCounter();
 }
 
 void chip8_fetch(Chip8 *chip8) {
@@ -69,6 +66,8 @@ void chip8_fetch(Chip8 *chip8) {
   uint8_t second_byte = chip8->memory[chip8->pc + 1];
 
   chip8->opcode = (first_byte << 8) | second_byte;
+
+  chip8->pc += 2;
 }
 
 bool chip8_execute(Chip8 *chip8) {
@@ -80,7 +79,7 @@ bool chip8_execute(Chip8 *chip8) {
 
     case 0x00E0:
       memset(chip8->framebuffer, false, sizeof(chip8->framebuffer));
-      chip8->draw_flag = true;
+      chip8->flag_draw = true;
       break;
 
     case 0x00EE:
@@ -116,7 +115,7 @@ bool chip8_execute(Chip8 *chip8) {
       break;
     }
 
-    chip8->stack[chip8->sp++] = chip8->pc + 2;
+    chip8->stack[chip8->sp++] = chip8->pc;
     chip8->pc = nnn;
     return true;
   }
@@ -128,7 +127,7 @@ bool chip8_execute(Chip8 *chip8) {
     if (chip8->v[x] == nn) {
       chip8->pc += 2;
     }
-    break;
+    return true;
   }
 
   case 0x4000: {
@@ -138,7 +137,7 @@ bool chip8_execute(Chip8 *chip8) {
     if (chip8->v[x] != nn) {
       chip8->pc += 2;
     }
-    break;
+    return true;
   }
 
   case 0x5000: {
@@ -149,7 +148,7 @@ bool chip8_execute(Chip8 *chip8) {
       if (chip8->v[x] == chip8->v[y]) {
         chip8->pc += 2;
       }
-      break;
+      return true;
     }
 
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Erro",
@@ -267,7 +266,7 @@ bool chip8_execute(Chip8 *chip8) {
       if (chip8->v[x] != chip8->v[y]) {
         chip8->pc += 2;
       }
-      break;
+      return true;
     }
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Erro",
                              "Opcode desconhecido!", NULL);
@@ -322,7 +321,8 @@ bool chip8_execute(Chip8 *chip8) {
         }
       }
     }
-    chip8->draw_flag = true;
+
+    chip8->flag_draw = true;
     break;
   }
 
@@ -374,7 +374,7 @@ bool chip8_execute(Chip8 *chip8) {
 
     case 0x29: {
       uint8_t x = (chip8->opcode & 0x0F00) >> 8;
-      chip8->regI = FONT_INIT_POINT + (chip8->v[x] + 5);
+      chip8->regI = FONT_INIT_POINT + (chip8->v[x] * 5);
       break;
     }
 
@@ -411,13 +411,12 @@ bool chip8_execute(Chip8 *chip8) {
       for (uint8_t i = 0; i < 16; i++) {
         if (chip8->keypad[i]) {
           chip8->v[x] = i;
-          chip8->pc += 2;
           return true;
         }
       }
 
       chip8->pc -= 2;
-      break;
+      return true;
     }
 
     case 0x1E: {
@@ -435,8 +434,6 @@ bool chip8_execute(Chip8 *chip8) {
                              "Opcode desconhecido!", NULL);
     return false;
   }
-
-  chip8->pc += 2;
 
   return true;
 }

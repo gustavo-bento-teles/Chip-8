@@ -31,7 +31,7 @@ typedef struct {
   uint8_t sound_timer;
 
   bool framebuffer[WIDTH_CHIP8 * HEIGHT_CHIP8];
-  bool draw_flag;
+  bool flag_draw;
 
   uint16_t opcode;
 } Chip8;

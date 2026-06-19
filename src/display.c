@@ -1,7 +1,5 @@
 #include "include/display.h"
-#include "SDL2/SDL.h"
 #include "include/chip8.h"
-#include <stdbool.h>
 
 bool init_display(Display *display) {
   display->window = NULL;
@@ -29,7 +27,8 @@ bool init_display(Display *display) {
   }
 
   display->renderer =
-      SDL_CreateRenderer(display->window, -1, SDL_RENDERER_ACCELERATED);
+      SDL_CreateRenderer(display->window, -1,
+                         SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 
   if (!display->renderer) {
     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Erro",
@@ -42,23 +41,22 @@ bool init_display(Display *display) {
 }
 
 void draw_framebuffer(Display *display, bool *framebuffer) {
+  SDL_SetRenderDrawColor(display->renderer, 0, 0, 0, 255);
+  SDL_RenderClear(display->renderer);
+
+  SDL_SetRenderDrawColor(display->renderer, 255, 255, 255, 255);
+
   for (int i = 0; i < WIDTH_CHIP8 * HEIGHT_CHIP8; i++) {
     if (framebuffer[i]) {
       int px = (i % WIDTH_CHIP8) * SCALE;
       int py = (i / WIDTH_CHIP8) * SCALE;
 
       SDL_Rect rect = {px, py, SCALE, SCALE};
-      SDL_SetRenderDrawColor(display->renderer, 255, 255, 255, 255);
-
       SDL_RenderFillRect(display->renderer, &rect);
     }
   }
-  SDL_RenderPresent(display->renderer);
-}
 
-void clear_display(Display *display) {
-  SDL_SetRenderDrawColor(display->renderer, 0, 0, 0, 255);
-  SDL_RenderClear(display->renderer);
+  SDL_RenderPresent(display->renderer);
 }
 
 void destroy_display(Display *display) {
