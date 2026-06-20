@@ -5,7 +5,10 @@ Interpretador de CHIP-8 escrito em C, utilizando SDL2 para renderização e entr
 CHIP-8 é uma linguagem interpretada criada na década de 1970 para execução de jogos simples em microcomputadores como o COSMAC VIP.
 
 <p align="center">
-    <img src="ibm_logo_foto.png" alt="Logo da IBM no emulador do CHIP-8" width="500">
+    <img src="ibm_logo_foto.png" alt="Logo da IBM no emulador do CHIP-8" width="600">
+</p>
+
+<p align="center">
     <sub>Logo da IBM no emulador do CHIP-8</sub>
 </p>
 
